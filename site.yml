@@ -1,0 +1,78 @@
+
+---
+
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: install updates (rocky)
+    tags: always
+    dnf:
+      update_only: yes
+      update_cache: yes
+    when: ansible_distribution == "Rocky"
+
+  - name: install updates (debian)
+    tags: always
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Debian"
+
+
+
+
+- hosts: web_servers
+  become: true
+  tasks:
+
+  - name: install apache and php for Ubuntu servers
+    tags: apache, apache2, ubuntu
+    apt:
+      name:
+        - apache2
+        - libapache2-mod-php
+      state: latest
+    when: ansible_distribution == "Debian"
+
+  - name: install apache and php for Rocky servers
+    tags: apache, rocky, httpd
+    dnf:
+      name:
+        - httpd
+        - php
+      state: latest
+    when: ansible_distribution == "Rocky"
+
+
+
+- hosts: db_servers
+  become: true
+  tasks:
+
+  - name: install mariadb package (rocky)
+    tags: db, mariadb, rocky
+    dnf:
+      name: mariadb-server
+      state: latest
+    when: ansible_distribution == "Rocky"
+
+  - name: install mariadb package (debian)
+    tags: db, mariadb, debian
+    apt:
+      name: mariadb-server
+      state: latest
+    when: ansible_distribution == "Debian"
+
+
+
+- hosts: file_servers
+  become: true
+  tasks:
+
+  - name: install samba package
+    tags: samba
+    package:
+      name: samba
+      state: latest
